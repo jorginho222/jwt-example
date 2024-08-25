@@ -177,6 +177,4 @@ class UserRegisterTest extends TestCase
         $response->assertStatus(422);
         $response->assertJsonStructure(['data', 'errors' => ['last_name'], 'status', 'message']);
     }
-
-
 }

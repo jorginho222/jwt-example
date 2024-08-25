@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Auth;
 
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateUserRequest;
+use App\Http\Resources\UserResource;
 use App\Models\User;
-use Illuminate\Http\Request;
 
 class RegisterController extends Controller
 {
@@ -13,6 +14,6 @@ class RegisterController extends Controller
     {
         $user = User::create($request->validated());
 
-        return jsonResponse(data: ['user' => $user]);
+        return jsonResponse(data: ['user' => UserResource::make($user)]);
     }
 }
