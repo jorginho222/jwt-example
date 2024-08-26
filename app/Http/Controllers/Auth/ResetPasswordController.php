@@ -29,24 +29,31 @@ class ResetPasswordController extends Controller
 
     public function resetPassword(Request $request)
     {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function ($user, $password) use ($request) {
-                $user
-                    ->forceFill([
-                        'password' => Hash::make($password),
-                    ])
-                    ->setRememberToken(Str::random(60))
-                    ->save();
+                $user->forceFill([
+                    'password' => Hash::make($password),
+                ])->setRememberToken(Str::random(60));
+                $user->save();
                 event(new PasswordReset($user));
             }
         );
 
-        $sent = $status === Password::PASSWORD_RESET;
-        return jsonResponse(
-            status: $sent ? 200 : 500,
-            message: $sent ? 'OK' : 'Error'
-        );
+        $message = match ($status) {
+            Password::INVALID_USER => 'Invalid email',
+            Password::INVALID_TOKEN => 'Invalid Token',
+            default => 'Ok',
+        };
 
+        return jsonResponse(
+            status: $status === Password::PASSWORD_RESET ? 200 : 500,
+            message: $message
+        );
     }
 }
